@@ -16,6 +16,6 @@ Globalny Reset Szyny	Umożliwia resetowanie wszystkich kontrolerów hosta USB (u
 Wykrywanie Urządzeń	Skanuje drzewo /sys/bus/usb/devices/ w celu identyfikacji podłączonych urządzeń, pobierając ich VID:PID oraz odczytując ich aktualny stan autoryzacji.
 Mapowanie Nazw	Wykorzystuje pliki standardu usb.ids (np. /usr/share/hwdata/usb.ids) do tłumaczenia par VID:PID na czytelne nazwy producenta i produktu.
 
-KOMPILACJA
+
   cmake -B build
   cmake --build build -j$(nproc)
