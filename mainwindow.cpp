@@ -16,8 +16,7 @@
 #include "PortBreaker.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-{
+    : QMainWindow(parent) {
     m_portBreaker = new PortBreaker(this);
 
     if (!isRoot()) {
@@ -62,7 +61,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     setCentralWidget(centralWidget);
 
-    // 🔹 Tabela urządzeń
     m_deviceTable = new QTableWidget;
     m_deviceTable->setColumnCount(5);
     m_deviceTable->setHorizontalHeaderLabels({"VID:PID", "Nazwa Urzadzenia", "Status", "Sysfs", "Wake-up"});
@@ -70,13 +68,11 @@ MainWindow::MainWindow(QWidget *parent)
     m_deviceTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_deviceTable->setSortingEnabled(true);
 
-    // 🔹 Przywracanie poprzedniego stanu kolumn
     QSettings settings("PortBreakerFramework", "USBManager");
     QByteArray headerState = settings.value("tableHeaderState").toByteArray();
     if (!headerState.isEmpty()) {
         m_deviceTable->horizontalHeader()->restoreState(headerState);
     } else {
-        // Domyślne szerokości jeśli brak zapisu
         m_deviceTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
         m_deviceTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
         m_deviceTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
@@ -87,13 +83,11 @@ MainWindow::MainWindow(QWidget *parent)
         m_deviceTable->setColumnWidth(4, 90);
     }
 
-    // 🔹 Dock z tabelą
     QDockWidget* deviceDock = new QDockWidget("Lista Urzadzen", this);
     deviceDock->setAllowedAreas(Qt::AllDockWidgetAreas);
     deviceDock->setWidget(m_deviceTable);
     addDockWidget(Qt::LeftDockWidgetArea, deviceDock);
 
-    // 🔹 Połączenia sygnałów
     connect(m_refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshButton);
     connect(m_enableButton, &QPushButton::clicked, this, &MainWindow::onEnableButton);
     connect(m_disableButton, &QPushButton::clicked, this, &MainWindow::onDisableButton);
@@ -104,7 +98,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_toggleWakeupButton, &QPushButton::clicked, this, &MainWindow::onToggleWakeupButton);
     connect(m_showAllDevices, &QCheckBox::toggled, this, &MainWindow::onShowAllDevicesToggled);
 
-    // 🔹 Przywracanie ustawień okna
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
     m_timerSpinBox->setValue(settings.value("timerValue", 5).toInt());
@@ -112,17 +105,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     updateDeviceTable();
 }
-MainWindow::~MainWindow()
-{
+
+MainWindow::~MainWindow() {
     QSettings settings("PortBreakerFramework", "USBManager");
 
-    // 🔹 Zapisz bieżący stan okna i widżetów
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
     settings.setValue("timerValue", m_timerSpinBox->value());
     settings.setValue("showAll", m_showAllDevices->isChecked());
 
-    // 🔹 Zapisz układ kolumn tabeli
     if (m_deviceTable && m_deviceTable->horizontalHeader()) {
         settings.setValue("tableHeaderState", m_deviceTable->horizontalHeader()->saveState());
     }
@@ -134,14 +125,12 @@ bool MainWindow::isRoot() {
     return geteuid() == 0;
 }
 
-void MainWindow::onRefreshButton()
-{
+void MainWindow::onRefreshButton() {
     updateDeviceTable();
     m_statusLabel->setText("Device list refreshed.");
 }
 
-void MainWindow::onEnableButton()
-{
+void MainWindow::onEnableButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
         m_statusLabel->setText("Select a device to enable.");
@@ -157,8 +146,7 @@ void MainWindow::onEnableButton()
     }
 }
 
-void MainWindow::onDisableButton()
-{
+void MainWindow::onDisableButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
         m_statusLabel->setText("Select a device to disable.");
@@ -174,8 +162,7 @@ void MainWindow::onDisableButton()
     }
 }
 
-void MainWindow::onResetSysfsButton()
-{
+void MainWindow::onResetSysfsButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
         m_statusLabel->setText("Select a device to reset.");
@@ -191,8 +178,7 @@ void MainWindow::onResetSysfsButton()
     }
 }
 
-void MainWindow::onResetIoctlButton()
-{
+void MainWindow::onResetIoctlButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
         m_statusLabel->setText("Select a device to reset.");
@@ -211,8 +197,7 @@ void MainWindow::onResetIoctlButton()
     }
 }
 
-void MainWindow::onResetAllButton()
-{
+void MainWindow::onResetAllButton() {
     if (m_portBreaker->resetAllDevicesSysfs()) {
         m_statusLabel->setText("All USB host controllers have been reset.");
         updateDeviceTable();
@@ -221,8 +206,7 @@ void MainWindow::onResetAllButton()
     }
 }
 
-void MainWindow::onToggleWakeupButton()
-{
+void MainWindow::onToggleWakeupButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
         m_statusLabel->setText("Select a device to toggle wake-up.");
@@ -238,8 +222,7 @@ void MainWindow::onToggleWakeupButton()
     }
 }
 
-void MainWindow::onDisableWithTimerButton()
-{
+void MainWindow::onDisableWithTimerButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
         m_statusLabel->setText("Select a device to disable.");
@@ -274,14 +257,12 @@ void MainWindow::onDisableWithTimerButton()
     }
 }
 
-void MainWindow::onShowAllDevicesToggled(bool checked)
-{
+void MainWindow::onShowAllDevicesToggled(bool checked) {
     Q_UNUSED(checked)
     updateDeviceTable();
 }
 
-void MainWindow::updateDeviceTable()
-{
+void MainWindow::updateDeviceTable() {
     std::vector<UsbDevice> all_devices = m_portBreaker->getDevices();
     
     if (!m_showAllDevices->isChecked()) {
@@ -298,8 +279,7 @@ void MainWindow::updateDeviceTable()
     }
 }
 
-void MainWindow::updateDeviceTable(const std::vector<UsbDevice>& devices)
-{
+void MainWindow::updateDeviceTable(const std::vector<UsbDevice>& devices) {
     m_deviceTable->setRowCount(0);
     m_deviceTable->setRowCount(devices.size());
     for (size_t i = 0; i < devices.size(); ++i) {
