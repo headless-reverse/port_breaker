@@ -24,8 +24,7 @@ struct UsbDevice {
     std::string wakeup_path;
 };
 
-class PortBreaker : public QObject
-{
+class PortBreaker : public QObject {
     Q_OBJECT
 
 public:
@@ -43,7 +42,6 @@ public:
     bool resetAllDevicesSysfs();
     bool toggleWakeupByPath(const std::string& sysfs_path);
     
-
 private:
     std::map<std::string, std::string> m_usbNames;
     std::string readSysfsFile(const std::string& file_path);
