@@ -18,13 +18,11 @@
 #include <linux/usbdevice_fs.h>
 #include <sys/ioctl.h>
 #include <stdexcept>
-
 #include <QThread> 
 #include <QDebug>
 #include <QDir>
 
-PortBreaker::PortBreaker(QObject *parent) : QObject(parent)
-{
+PortBreaker::PortBreaker(QObject *parent) : QObject(parent) {
     m_usbNames = loadUsbNames();
 }
 
@@ -61,7 +59,7 @@ std::map<std::string, std::string> PortBreaker::loadUsbNames() {
         }
     }
     if (ids_path.empty()) {
-        qDebug() << "[!] Ostrzezenie: błąd pliku usb.ids. Nazwy urzadzen nie beda wyswietlane.";
+        qDebug() << "[!] Ostrzezenie: błąd pliku usb.ids. Nazwy nie beda wyswietlane.";
         return usb_names;
     }
     std::ifstream ids_file(ids_path);
@@ -169,8 +167,7 @@ bool PortBreaker::resetDeviceSysfsByPath(const std::string& sysfs_path) {
     return false;
 }
 
-bool PortBreaker::toggleWakeupByPath(const std::string& sysfs_path)
-{
+bool PortBreaker::toggleWakeupByPath(const std::string& sysfs_path) {
     std::string wakeup_path = sysfs_path + "/power/wakeup";
     
     if (access(wakeup_path.c_str(), F_OK) == -1) {
@@ -223,13 +220,12 @@ bool PortBreaker::ioctlResetDevice(const std::string& dev_path) {
     return success;
 }
 
-/// Finds a USB device by VID:PID and resets it via ioctl.
 bool PortBreaker::resetDeviceIoctl(const std::string& vid_pid) {
     std::string dev_path = findDevPathByVidPid(vid_pid);
     if (!dev_path.empty()) {
         bool success = ioctlResetDevice(dev_path);
         if (success) {
-            QThread::sleep(2); // Give the device time to re-enumerate
+            QThread::sleep(2);
         }
         return success;
     }
@@ -237,12 +233,10 @@ bool PortBreaker::resetDeviceIoctl(const std::string& vid_pid) {
     return false;
 }
 
-/// Resets all USB host controllers by toggling the 'authorized' sysfs file.
 bool PortBreaker::resetAllDevicesSysfs() {
     std::vector<std::string> hostControllers;
     QDir devices_dir(QString::fromStdString(SYSFS_USB_DEVICES));
 
-    // Find all host controllers matching "usbX" pattern
     for (const QString& entry_q : devices_dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         std::string name = entry_q.toStdString();
         if (name.rfind("usb", 0) == 0 && name.length() > 3 && std::all_of(name.begin() + 3, name.end(), ::isdigit)) {
