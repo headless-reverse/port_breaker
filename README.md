@@ -1,4 +1,4 @@
-#⚡ port_breaker
+**⚡ port_breaker**
 zarządzanie portami usb / sysfs, ioctl - app deskopowa w C/C ++Qt6  (Linux)
     
     cmake -B build
@@ -8,8 +8,8 @@ zarządzanie portami usb / sysfs, ioctl - app deskopowa w C/C ++Qt6  (Linux)
 
 #🧠 Opis Techniczny
 
-**🔌 (Enable/Disable)**
-Zapis sekwencji echo 1 lub echo 0 do pliku /sys/bus/usb/devices/*/authorized.
+**🔌 (Enable/Disable)**<br>
+Zapis sekwencji echo 1 lub echo 0 do pliku /sys/bus/usb/devices/*/authorized.<br>
 Logiczne odłączanie (0) lub podłączanie (1) urządzenia.
 **⏱️ Disable (timer)**
 Zapis echo 0 do authorized, następnie automatyczny echo 1 po czasie ...sek.
