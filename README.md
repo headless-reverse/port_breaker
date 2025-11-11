@@ -1,4 +1,4 @@
-#⚡ port_breaker
+# ⚡ port_breaker
 zarządzanie portami usb / sysfs, ioctl - app deskopowa w C/C ++Qt6  (Linux)
     
     cmake -B build
@@ -6,7 +6,7 @@ zarządzanie portami usb / sysfs, ioctl - app deskopowa w C/C ++Qt6  (Linux)
 
   <img width="1081" height="399" alt="portbreaker" src="https://github.com/user-attachments/assets/202b44da-e1e6-499d-8149-569f1a43d560" />
 
-##🧠 Opis Techniczny
+## 🧠 Opis Techniczny
 
 **🔌 (Enable/Disable)**<br>
 Zapis sekwencji echo 1 lub echo 0 do pliku /sys/bus/usb/devices/*/authorized.<br>
@@ -27,7 +27,7 @@ Resetuje wszystkie porty i urządzenia na kontrolerach hosta.<br>
 Zapis enabled lub disabled do /sys/.../power/wakeup.<br>
 Kontroluje, czy urządzenie może wybudzić system (ACPI).<br>
 
-##🧩 Logika Aplikacji
+## 🧩 Logika Aplikacji
 
 **🔍 Wykrywanie Urządzeń**<br>
 Skanowanie i parsowanie drzewa katalogów w /sys/bus/usb/devices/.<br>
