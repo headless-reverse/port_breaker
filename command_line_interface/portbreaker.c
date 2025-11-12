@@ -191,15 +191,14 @@ static int reset_all_devices_sysfs() {
 }
 void print_usage(const char *appName) {
     fprintf(stdout, "Użycie: %s [opcja] [argumenty]\n", appName);
-    fprintf(stdout, "  -e, --enable <SYSFS_PATH>      Włącz urządzenie. (Użyj ścieżki z kolumny [PATH]).\n");
-    fprintf(stdout, "  -d, --disable <SYSFS_PATH>     Wyłącz urządzenie.\n");
-    fprintf(stdout, "  -r, --reset-sysfs <SYSFS_PATH> Resetuj (Wyłącz->Włącz) urządzenie Sysfs.\n");
-    fprintf(stdout, "  -t, --timed-disable <PATH> <SEC> Wyłącz na SEC sekund, a następnie włącz.\n");
-    fprintf(stdout, "  -i, --reset-ioctl <DEV_PATH>   Resetuj przez ioctl (dla /dev/bus/usb/XXX/YYY).\n");
-    fprintf(stdout, "  -R, --reset-all                Resetuj wszystkie kontrolery hosta (Sysfs).\n");
-    fprintf(stdout, "\nLista i Pomoc:\n");
-    fprintf(stdout, "  -l, --list [all]               Lista urządzeń (bez argumentu pomija hosty, 'all' pokazuje wszystkie).\n");
-    fprintf(stdout, "  -h, --help                     Wyświetl tę pomoc.\n");
+    fprintf(stdout, "  -e, --enable <SYSFS_PATH>      	Włącz urządzenie. (Użyj ścieżki z kolumny [PATH]).\n");
+    fprintf(stdout, "  -d, --disable <SYSFS_PATH>     	Wyłącz urządzenie.\n");
+    fprintf(stdout, "  -r, --reset-sysfs <SYSFS_PATH> 	Resetuj (Wyłącz->Włącz) urządzenie Sysfs.\n");
+    fprintf(stdout, "  -t, --timed-disable <PATH> <SEC>	Wyłącz na SEC sekund, a następnie włącz.\n");
+    fprintf(stdout, "  -i, --reset-ioctl <DEV_PATH>   	Resetuj przez ioctl (dla /dev/bus/usb/XXX/YYY).\n");
+    fprintf(stdout, "  -R, --reset-all                	Resetuj wszystkie kontrolery hosta (Sysfs).\n");
+    fprintf(stdout, "Lista:\n");
+    fprintf(stdout, "  -l, --list 'all'              	Lista urządzeń (pomija hosty, 'all' pokazuje wszystkie).\n");
 }
 int main(int argc, char *argv[]) {
     if (argc >= 2) {
