@@ -48,7 +48,7 @@ startFilterAll=false
     systemctl stop portbreaker.service
     systemctl status portbreaker.service
 
-## 🌐 Katalog html
-zmien index.html <br>
-const WS_URL = "ws://127.0.0.1:7678";<br>
+## 🌐 html.tar.xz
+zmien index.html  
+const WS_URL = "ws://127.0.0.1:7678";  
 w zależności od conf
