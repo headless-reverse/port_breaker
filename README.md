@@ -47,10 +47,9 @@ Aplikacja wymaga roota do operacji zapisu sysfs / ioctl.<br>
 # 🛰️ portbreaker_d — wersja daemon (WebSocket)
 
 **usługa systemowa (systemd service)  zdalne sterowanie portami USB poprzez WebSocket API**
-## Instrukcje Uruchomienia i Zarządzania Demonem portbreaker_d (WebSocket)
-### Wymagane Pliki:
+## Wymagane Pliki:
 
-#### PLIK /etc/systemd/system/portbreaker.service
+### PLIK /etc/systemd/system/portbreaker.service
 ```ini
 [Unit]
 Description=port_breaker --daemon (WebSocket)
@@ -67,7 +66,7 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 ```
-#### PLIK /usr/local/etc/portbreaker/portbreaker.conf
+### PLIK /usr/local/etc/portbreaker/portbreaker.conf
 ```ini
 [Server]
 port=7678
@@ -75,7 +74,7 @@ port=7678
 [PortBreaker]
 startFilterAll=false
 ```
-### Zarządzanie Usługą:
+## Zarządzanie Usługą:
 
 **Przeładowanie Konfiguracji**
 ```bash
