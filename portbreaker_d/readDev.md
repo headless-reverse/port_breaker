@@ -58,7 +58,7 @@ systemctl disable portbreaker.service
 ```
 
 ## 🌐 Katalog html
-zmien<br>
+zmien index.html <br>
 const WS_URL = "ws://127.0.0.1:7678";<br>
 w zależności od conf
 
