@@ -11,18 +11,23 @@ zarządzanie portami usb / sysfs, ioctl - app deskopowa w C/C ++Qt6  (Linux)
 **🔌 (Enable/Disable)**<br>
 Zapis sekwencji echo 1 lub echo 0 do pliku /sys/bus/usb/devices/*/authorized.<br>
 Logiczne odłączanie (0) lub podłączanie (1) urządzenia.<br>
+<br>
 **⏱️ Disable (timer)**<br>
 Zapis echo 0 do authorized, następnie automatyczny echo 1 po czasie ...sek.<br>
 Używa QTimer (Qt) do ponownego włączenia po opóźnieniu (ms).<br>
+<br>
 **♻️ Reset (sysfs)**<br>
 Szybka sekwencja zapisu echo 0 → echo 1 do pliku authorized.<br>
 Symuluje fizyczne odłączenie/podłączenie urządzenia (miękki reset).<br>
+<br>
 **💥 Reset (ioctl)**<br>
 Wywołanie ioctl(USBDEVFS_RESET) na /dev/bus/usb/....<br>
 Twardy reset na poziomie jądra — wymaga ścieżki urządzenia.<br>
+<br>
 **🌐 Globalny Reset Szyny**<br>
 Iteracja po wszystkich usbX/authorized, zapis 0 → 1.<br>
 Resetuje wszystkie porty i urządzenia na kontrolerach hosta.<br>
+<br>
 **🌙 Zarządzanie Wake-up**<br>
 Zapis enabled lub disabled do /sys/.../power/wakeup.<br>
 Kontroluje, czy urządzenie może wybudzić system (ACPI).<br>
@@ -32,21 +37,28 @@ Kontroluje, czy urządzenie może wybudzić system (ACPI).<br>
 **🔍 Wykrywanie Urządzeń**<br>
 Skanowanie i parsowanie drzewa katalogów w /sys/bus/usb/devices/.<br>
 Identyfikacja urządzeń i pobieranie ich ścieżek (authorized_path, wakeup_path).<br>
+<br>
 **🗂️ Mapowanie Nazw**<br>
 Wyszukiwanie par VID:PID w plikach konfiguracyjnych usb.ids.<br>
 Tłumaczenie ID na czytelne nazwy producenta i produktu.<br>
+<br>
 **🚫 Filtrowanie Root Hubów**<br>
 Domyślnie ukrywa urządzenia o VID 1d6b:*. <-- USTAW POD SIEBIE.<br>
 PLIK mainwindow.cpp linia 257 if (dev.vid_pid != "N/A" && dev.vid_pid.rfind("1d6b:", 0) != 0) {<br>
 // Filtr: Pokaż tylko urządzenia z VID:PID, które nie są Root Hubami (1d6b:*)<br>
 Ogranicza widoczność do faktycznych urządzeń peryferyjnych, z możliwością wyłączenia filtra.<br>
+<br>
 **🧾 Wymagania Systemowe**<br>
 Sprawdzenie geteuid() == 0.<br>
-Aplikacja wymaga roota do operacji zapisu sysfs / ioctl.<br>
+Aplikacja wymaga root do operacji zapisu sysfs / ioctl.<br>
 
 # 🛰️ portbreaker_d — wersja daemon (WebSocket)
 
 **usługa systemowa (systemd service)  zdalne sterowanie portami USB poprzez WebSocket API**
+
+    cmake -B build
+    cmake --build build -j$(nproc)
+
 ## Wymagane Pliki:
 
 ### PLIK /etc/systemd/system/portbreaker.service
@@ -74,36 +86,21 @@ port=7678
 [PortBreaker]
 startFilterAll=false
 ```
-## Zarządzanie Usługą:
+## systemctl:
 
-**Przeładowanie Konfiguracji**
-```bash
-sudo systemctl daemon-reload
-```
-**włącz uruchamianie przy starcie**
-```bash
-systemctl enable portbreaker.service
-```
-**uruchom daemon**
-```bash
-systemctl start portbreaker.service
-```
-**status**
-```bash
-systemctl status portbreaker.service
-```
-**logi w czasie rzeczywistym**
-```bash
-journalctl -u portbreaker.service -f
-```
-**zatrzymanie daemon**
-```bash
-systemctl stop portbreaker.service
-```
-**wyłączenie uruchamiania przy starcie systemu**
-```bash
-systemctl disable portbreaker.service
-```
+**Przeładowanie Konfiguracji / LOGI**
+
+    systemctl daemon-reload
+    journalctl -u portbreaker.service -f
+**włącz/wyłącz uruchamianie przy starcie**
+
+    systemctl enable portbreaker.service
+    systemctl disable portbreaker.service
+**start/stop/status daemon**
+
+    systemctl start portbreaker.service
+    systemctl stop portbreaker.service
+    systemctl status portbreaker.service
 
 ## 🌐 Katalog html
 zmien index.html <br>
