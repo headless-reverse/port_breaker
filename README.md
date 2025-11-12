@@ -46,4 +46,4 @@ Aplikacja wymaga roota do operacji zapisu sysfs / ioctl.<br>
 
 # 🛰️ portbreaker_d — wersja daemon (WebSocket)
 
-usługa systemowa (systemd service), zapewniająca zdalne sterowanie portami USB poprzez WebSocket API.
+**usługa systemowa (systemd service)  zdalne sterowanie portami USB poprzez WebSocket API**
