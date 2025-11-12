@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PortBreaker USB Control (Modern Card UI)</title>
+    <style>
+        /* --- STYLIZACJA MODERN CARD UI --- */
+        :root {
+            --bg-color: #f0f2f5; /* Light Gray Background */
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --accent-color: #007bff; /* Blue Accent */
+            --danger-color: #dc3545; /* Red */
+            --success-color: #28a745; /* Green */
+            --button-bg: #f8f9fa;
+            --button-hover: #e2e6ea;
+            --border-color: #e9ecef;
+            --status-active: #28a745;
+            --status-disabled: #6c757d;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: var(--accent-color);
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .status-bar {
+            background-color: var(--card-bg);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+        }
+        .status-connection {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        .status-connection.connected {
+            color: var(--success-color);
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 25px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        .controls { grid-column: 1; }
+        .device-list { grid-column: 2; }
+
+        /* --- KONTROLKI I PRZYCISKI --- */
+        .control-group h3 {
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .control-group button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            font-weight: 500;
+        }
+        .control-group button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            color: #666;
+        }
+        /* Style przycisków akcji */
+        .control-group button:nth-child(4) { background-color: var(--success-color); color: white; } /* Włącz (Sysfs) */
+        .control-group button:nth-child(5) { background-color: var(--danger-color); color: white; } /* Wyłącz (Sysfs) */
+        .control-group button:nth-child(6) { background-color: var(--accent-color); color: white; } /* Resetuj (Sysfs) */
+        .control-group button:nth-child(7) { background-color: #6c757d; color: white; } /* Resetuj (Ioctl) */
+        .control-group button:nth-child(8) { background-color: #ffc107; color: #333; } /* Wł/Wył Wake-up */
+        .control-group button:hover:not(:disabled) {
+            opacity: 0.9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .timer-input {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .timer-input input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        .timer-input label {
+            margin-right: 5px;
+        }
+        .timer-input button {
+            flex-grow: 1;
+            background-color: var(--danger-color);
+            color: white;
+            padding: 8px 12px;
+            margin-bottom: 0;
+        }
+        .filter-control {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        /* --- TABELA URZĄDZEŃ --- */
+        .device-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .device-table th, .device-table td {
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 10px;
+            text-align: left;
+        }
+        .device-table th {
+            background-color: var(--bg-color);
+            color: #555;
+            font-weight: 600;
+        }
+        .device-table tbody tr:hover {
+            background-color: #f7f7f7;
+            cursor: pointer;
+        }
+        .device-table tr.selected {
+            background-color: #e6f0ff; /* Light Blue po wybraniu */
+            border-left: 5px solid var(--accent-color);
+        }
+        /* Statusy */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: white;
+        }
+        .status-badge.Aktywny {
+            background-color: var(--status-active);
+        }
+        .status-badge.Wylaczony {
+            background-color: var(--danger-color);
+        }
+        .status-badge.N\/A {
+            background-color: #999;
+        }        
+        /* --- LOGI --- */
+        .logs {
+            margin-top: 25px;
+            grid-column: 1 / span 2;
+        }
+        .logs h2 {
+            color: #666;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .log-output {
+            height: 250px;
+            overflow-y: scroll;
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            color: #444;
+        }
+        .log-output div {
+            padding: 1px 0;
+        }
+        .log-output .log-user { color: #888; }
+        .log-output .log-server-ok { color: var(--success-color); }
+        .log-output .log-server-error { color: var(--danger-color); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PortBreaker USB Control System</h1>
+        <div class="status-bar">
+            <div id="connectionStatus" class="status-connection">STATUS: ROZŁĄCZONO</div>
+            <div id="selectedDevice">Wybrane: Brak | Ścieżka: N/A</div>
+        </div>
+        <div class="main-grid">            
+            <div class="controls card">                
+                <div class="control-group">
+                    <h3>Akcje Urządzenia</h3>
+                    <div class="timer-input">
+                        <label for="timerSeconds">Czas (s):</label>
+                        <input type="number" id="timerSeconds" value="6" min="1">
+                        <button id="btnDisableTimer">Wyłącz z Timerem</button>
+                    </div>                    
+                    <button id="btnEnable">Włącz (Sysfs)</button>
+                    <button id="btnDisable">Wyłącz (Sysfs)</button>
+                    <button id="btnResetSysfs">Resetuj (Sysfs)</button>
+                    <button id="btnResetIoctl">Resetuj (Ioctl)</button>
+                    <button id="btnToggleWakeup">Wł/Wył Wake-up</button>
+                </div>               
+                <div class="control-group">
+                    <h3>Akcje Globalne</h3>
+                    <button id="btnResetAll" style="background-color: #ff6600; color: white;">Resetuj wszystkie kontrolery</button>
+                    <button id="btnRefresh" style="background-color: #17a2b8; color: white;">Odśwież listę</button>
+                </div>
+                <div class="filter-control">
+                    <label>
+                        <input type="checkbox" id="chkFilter">
+                        Pokaż wszystkie (w tym root/fake_sys)
+                    </label>
+                </div>
+            </div>
+            <div class="device-list card">
+                <h2>Lista Urządzeń USB</h2>
+                <table class="device-table">
+                    <thead>
+                        <tr>
+                            <th>VID:PID</th>
+                            <th>Nazwa Urządzenia</th>
+                            <th>Status</th>
+                            <th>Wake-up</th>
+                            <th>Sysfs Path</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deviceTableBody">
+                        <tr><td colspan="5">Oczekiwanie na połączenie z serwerem...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="logs card">
+                <h2>Logi Komunikacji</h2>
+                <div id="logOutput" class="log-output"></div>
+            </div>            
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIKA JAVASCRIPT  ---
+        const WS_URL = "ws://127.0.0.1:7678";
+        let ws;
+        let selectedDevice = null;
+        const deviceTableBody = document.getElementById('deviceTableBody');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const selectedDeviceDisplay = document.getElementById('selectedDevice');
+        const logOutput = document.getElementById('logOutput');
+        const chkFilter = document.getElementById('chkFilter');
+        const buttons = [
+            'btnDisableTimer', 'btnEnable', 'btnDisable', 'btnResetSysfs', 
+            'btnResetIoctl', 'btnToggleWakeup', 'btnResetAll', 'btnRefresh'
+        ];
+        function log(message, type = 'user') {
+            const div = document.createElement('div');
+            div.classList.add(`log-${type}`);
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logOutput.appendChild(div);
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+        function setConnectionStatus(isConnected) {
+            if (isConnected) {
+                connectionStatus.textContent = "STATUS: POŁĄCZONO";
+                connectionStatus.classList.add('connected');
+                buttons.forEach(id => document.getElementById(id).disabled = false);
+            } else {
+                connectionStatus.textContent = "STATUS: ROZŁĄCZONO - Próba reconnectu...";
+                connectionStatus.classList.remove('connected');
+                buttons.forEach(id => document.getElementById(id).disabled = true);
+            }
+        }
+        function connectWebSocket() {
+            setConnectionStatus(false);
+            ws = new WebSocket(WS_URL);
+            ws.onopen = () => {
+                log("Połączono z serwerem PortBreaker.", 'server-ok');
+                setConnectionStatus(true);
+                sendWebSocketCommand('GET_DEVICES');
+                if(chkFilter.checked) {
+                    sendWebSocketCommand('SET_FILTER_ALL');
+                } else {
+                    sendWebSocketCommand('SET_FILTER_DEFAULT');
+                }
+            };
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);                
+                if (data.type === 'DEVICES_LIST') {
+                    renderDeviceTable(data.data);
+                    log(`[Server] Otrzymano listę ${data.data.length} urządzeń.`);
+                } else if (data.type === 'ACK') {
+                    log(`[Server OK] ${data.message}`, 'server-ok');
+                } else if (data.type === 'ERROR') {
+                    log(`[Server ERROR] ${data.message}`, 'server-error');
+                } else if (data.type === 'STATUS') {
+                    log(`[Server] ${data.message}`);
+                }
+            };
+            ws.onclose = () => {
+                log("Rozłączono z serwerem. Próba ponownego połączenia za 3s...", 'server-error');
+                setConnectionStatus(false);
+                setTimeout(connectWebSocket, 3000);
+            };
+            ws.onerror = (error) => {
+                log("Błąd WebSocket:", 'server-error');
+                ws.close();
+            };
+        }
+        function sendWebSocketCommand(type, payload = {}) {
+            if (ws.readyState === WebSocket.OPEN) {
+                const command = JSON.stringify({ type, ...payload });
+                log(`WS >>> ${type} (cel: ${payload.sysfs_path ? payload.sysfs_path : payload.vid_pid ? payload.vid_pid : 'Globalne'})`, 'user');
+                ws.send(command);
+            } else {
+                log("Błąd: Serwer niepołączony. Nie można wysłać komendy.", 'server-error');
+            }
+        }
+        function renderDeviceTable(devices) {
+            deviceTableBody.innerHTML = '';
+            let foundSelected = false;
+            devices.forEach(dev => {
+                const tr = document.createElement('tr');
+                tr.onclick = () => selectDevice(dev);                
+                if (selectedDevice && dev.sysfs_path === selectedDevice.sysfs_path) {
+                    tr.classList.add('selected');
+                    foundSelected = true;
+                }
+                tr.innerHTML = `
+                    <td>${dev.vid_pid}</td>
+                    <td>${dev.name}</td>
+                    <td><span class="status-badge ${dev.status.replace(/\s/g, '\\s')}">${dev.status}</span></td>
+                    <td><span class="status-badge ${dev.wakeup.replace(/\s/g, '\\s')}">${dev.wakeup}</span></td>
+                    <td>${dev.sysfs_path}</td>
+                `;
+                deviceTableBody.appendChild(tr);
+            });
+
+            if (selectedDevice && !foundSelected) {
+                 selectedDevice = null;
+                 selectedDeviceDisplay.textContent = 'Wybrane: Brak | Ścieżka: N/A';
+            }
+        }
+        function selectDevice(device) {
+            selectedDevice = device;
+            selectedDeviceDisplay.innerHTML = `Wybrane: <span style="color: var(--accent-color);">${device.vid_pid} - ${device.name}</span> | Ścieżka: ${device.sysfs_path}`;
+            sendWebSocketCommand('GET_DEVICES'); 
+        }
+        document.getElementById('btnRefresh').addEventListener('click', () => {
+            sendWebSocketCommand('GET_DEVICES');
+        });        
+        document.getElementById('btnResetAll').addEventListener('click', () => {
+            if (confirm("Jesteś pewien, że chcesz zresetować WSZYSTKIE kontrolery hosta USB? Spowoduje to odłączenie wszystkich urządzeń!")) {
+                sendWebSocketCommand('RESET_ALL');
+            }
+        });
+        function requireSelectedDevice(action) {
+            if (!selectedDevice) {
+                log(`Błąd: Wybierz urządzenie, aby wykonać akcję: ${action}.`, 'server-error');
+                return false;
+            }
+            return true;
+        }
+        document.getElementById('btnEnable').addEventListener('click', () => {
+            if (requireSelectedDevice('Włącz (Sysfs)')) {
+                sendWebSocketCommand('ENABLE', { sysfs_path: selectedDevice.sysfs_path });
+            }
+        });
+        document.getElementById('btnDisable').addEventListener('click', () => {
+            if (requireSelectedDevice('Wyłącz (Sysfs)')) {
+                sendWebSocketCommand('DISABLE', { sysfs_path: selectedDevice.sysfs_path });
+            }
+        });
+        document.getElementById('btnResetSysfs').addEventListener('click', () => {
+            if (requireSelectedDevice('Resetuj (Sysfs)')) {
+                sendWebSocketCommand('RESET_SYSFS', { sysfs_path: selectedDevice.sysfs_path });
+            }
+        });
+        document.getElementById('btnResetIoctl').addEventListener('click', () => {
+            if (requireSelectedDevice('Resetuj (Ioctl)')) {
+                if (selectedDevice.vid_pid === 'N/A') {
+                    log("Błąd: Reset IOCTL wymaga urządzenia z ważnym VID/PID.", 'server-error');
+                    return;
+                }
+                sendWebSocketCommand('RESET_IOCTL', { vid_pid: selectedDevice.vid_pid });
+            }
+        });
+        document.getElementById('btnToggleWakeup').addEventListener('click', () => {
+            if (requireSelectedDevice('Wł/Wył Wake-up')) {
+                sendWebSocketCommand('TOGGLE_WAKEUP', { sysfs_path: selectedDevice.sysfs_path });
+            }
+        });
+        document.getElementById('btnDisableTimer').addEventListener('click', () => {
+            if (requireSelectedDevice('Wyłącz z Timerem')) {
+                const seconds = parseInt(document.getElementById('timerSeconds').value);
+                if (seconds < 1 || isNaN(seconds)) {
+                    log("Błąd: Czas timera musi być liczbą całkowitą większą niż 0.", 'server-error');
+                    return;
+                }
+                sendWebSocketCommand('DISABLE_TIMER', { sysfs_path: selectedDevice.sysfs_path, seconds: seconds });
+            }
+        });
+        chkFilter.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                sendWebSocketCommand('SET_FILTER_ALL');
+            } else {
+                sendWebSocketCommand('SET_FILTER_DEFAULT');
+            }
+        });
+        connectWebSocket();
+    </script>
+</body>
+</html>
