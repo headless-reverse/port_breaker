@@ -29,12 +29,10 @@ class PortBreaker : public QObject {
 
 public:
     explicit PortBreaker(QObject *parent = nullptr);
-    std::vector<UsbDevice> getDevices();
-    
+    std::vector<UsbDevice> getDevices();    
     bool enableDeviceByPath(const std::string& sysfs_path);
     bool disableDeviceByPath(const std::string& sysfs_path);
     bool resetDeviceSysfsByPath(const std::string& sysfs_path);
-
     bool enableDevice(const std::string& vid_pid);
     bool disableDevice(const std::string& vid_pid);
     bool resetDeviceSysfs(const std::string& vid_pid);
