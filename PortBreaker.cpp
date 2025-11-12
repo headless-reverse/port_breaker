@@ -89,21 +89,17 @@ std::map<std::string, std::string> PortBreaker::loadUsbNames() {
 
 std::vector<UsbDevice> PortBreaker::getDevices() {
     std::vector<UsbDevice> devices;
-    QDir devices_dir(QString::fromStdString(SYSFS_USB_DEVICES));
-    
+    QDir devices_dir(QString::fromStdString(SYSFS_USB_DEVICES));    
     for (const QString& entry_q : devices_dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         std::string entry = entry_q.toStdString();
         std::string device_path = SYSFS_USB_DEVICES + entry;
-        std::string authorized_path = device_path + "/authorized";
-        
+        std::string authorized_path = device_path + "/authorized";        
         if (access(authorized_path.c_str(), F_OK) == 0) {
             UsbDevice dev;
             dev.path = device_path;
             dev.authorized_path = authorized_path;
-
             std::string vid = readSysfsFile(device_path + "/idVendor");
-            std::string pid = readSysfsFile(device_path + "/idProduct");
-            
+            std::string pid = readSysfsFile(device_path + "/idProduct");            
             if (!vid.empty() && !pid.empty()) {
                 dev.vid_pid = vid + ":" + pid;
                 auto it = m_usbNames.find(dev.vid_pid);
@@ -112,8 +108,7 @@ std::vector<UsbDevice> PortBreaker::getDevices() {
                 } else {
                     std::string manufacturer_name = readSysfsFile(device_path + "/manufacturer");
                     std::string product_name = readSysfsFile(device_path + "/product");
-                    dev.name = manufacturer_name + " " + product_name;
-                    
+                    dev.name = manufacturer_name + " " + product_name;                    
                     dev.name.erase(std::remove(dev.name.begin(), dev.name.end(), ' '), dev.name.end());
                 }
             } else if (entry.rfind("usb", 0) == 0) {
@@ -122,11 +117,9 @@ std::vector<UsbDevice> PortBreaker::getDevices() {
             } else {
                 dev.vid_pid = "N/A";
                 dev.name = "USB Hub " + entry;
-            }
-            
+            }            
             std::string bus_num_str = readSysfsFile(device_path + "/busnum");
             std::string dev_num_str = readSysfsFile(device_path + "/devnum");
-
             if (!bus_num_str.empty() && !dev_num_str.empty()) {
                 std::string bus_padded = std::string(3 - bus_num_str.length(), '0') + bus_num_str;
                 std::string dev_padded = std::string(3 - dev_num_str.length(), '0') + dev_num_str;
@@ -134,14 +127,12 @@ std::vector<UsbDevice> PortBreaker::getDevices() {
             } else {
                 dev.dev_path = "";
             }
-
             std::string wakeup_path = device_path + "/power/wakeup";
             if (access(wakeup_path.c_str(), F_OK) != -1) {
                 dev.wakeup_path = wakeup_path;
             } else {
                 dev.wakeup_path = "N/A";
-            }
-            
+            }            
             devices.push_back(dev);
         }
     }
@@ -168,16 +159,13 @@ bool PortBreaker::resetDeviceSysfsByPath(const std::string& sysfs_path) {
 }
 
 bool PortBreaker::toggleWakeupByPath(const std::string& sysfs_path) {
-    std::string wakeup_path = sysfs_path + "/power/wakeup";
-    
+    std::string wakeup_path = sysfs_path + "/power/wakeup";    
     if (access(wakeup_path.c_str(), F_OK) == -1) {
         qDebug() << "Plik power/wakeup nie istnieje:" << QString::fromStdString(sysfs_path);
         return false;
-    }
-    
+    }    
     std::string current_state = readSysfsFile(wakeup_path);
-    std::string new_state;
-    
+    std::string new_state;    
     if (current_state.find("enabled") != std::string::npos) {
         new_state = "disabled";
     } else if (current_state.find("disabled") != std::string::npos) {
@@ -186,7 +174,6 @@ bool PortBreaker::toggleWakeupByPath(const std::string& sysfs_path) {
         qDebug() << "Nieznany stan wakeup:" << QString::fromStdString(current_state);
         return false;
     }
-
     return writeSysfsFile(wakeup_path, new_state);
 }
 
@@ -205,14 +192,12 @@ bool PortBreaker::ioctlResetDevice(const std::string& dev_path) {
     if (fd < 0) {
         qDebug() << "[!] Error: Cannot open file " << QString::fromStdString(dev_path) << ". errno:" << errno;
         return false;
-    }
-    
+    }    
     bool success = true;
     if (ioctl(fd, USBDEVFS_RESET, 0) < 0) {
         qDebug() << "[!] ioctl error: Unable to reset device. errno:" << errno;
         success = false;
-    }
-    
+    }    
     close(fd);
     if (success) {
         qDebug() << "[✓] ioctl reset successful.";
@@ -236,19 +221,16 @@ bool PortBreaker::resetDeviceIoctl(const std::string& vid_pid) {
 bool PortBreaker::resetAllDevicesSysfs() {
     std::vector<std::string> hostControllers;
     QDir devices_dir(QString::fromStdString(SYSFS_USB_DEVICES));
-
     for (const QString& entry_q : devices_dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         std::string name = entry_q.toStdString();
         if (name.rfind("usb", 0) == 0 && name.length() > 3 && std::all_of(name.begin() + 3, name.end(), ::isdigit)) {
             hostControllers.push_back(name);
         }
     }
-
     if (hostControllers.empty()) {
         qDebug() << "[!] No USB host controllers found to reset.";
         return false;
     }
-
     bool all_disabled = true;
     for (const auto& controller : hostControllers) {
         std::string authorized_path = SYSFS_USB_DEVICES + controller + "/authorized";
@@ -259,9 +241,7 @@ bool PortBreaker::resetAllDevicesSysfs() {
             }
         }
     }
-
     QThread::sleep(1);
-
     bool all_enabled = true;
     for (const auto& controller : hostControllers) {
         std::string authorized_path = SYSFS_USB_DEVICES + controller + "/authorized";
@@ -272,6 +252,5 @@ bool PortBreaker::resetAllDevicesSysfs() {
             }
         }
     }
-
     return all_disabled && all_enabled;
 }
