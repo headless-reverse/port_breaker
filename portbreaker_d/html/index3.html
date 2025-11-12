@@ -188,7 +188,7 @@
         <h1>PortBreaker USB Control System</h1>
 
         <div class="status-bar">
-            <div id="connectionStatus" class="status-connection">STATUS: ROZŁĄCZONO</div>
+            <div id="connectionStatus" class="status-connection">🌐 STATUS: ROZŁĄCZONO</div>
             <div id="selectedDevice">Wybrane: Brak | Ścieżka: N/A</div>
         </div>
         
@@ -274,11 +274,11 @@
         }
         function setConnectionStatus(isConnected) {
             if (isConnected) {
-                connectionStatus.textContent = "STATUS: POŁĄCZONO";
+                connectionStatus.textContent = "🌐 STATUS: POŁĄCZONO";
                 connectionStatus.classList.add('connected');
                 buttons.forEach(id => document.getElementById(id).disabled = false);
             } else {
-                connectionStatus.textContent = "STATUS: ROZŁĄCZONO - Próba reconnectu...";
+                connectionStatus.textContent = "🌐 STATUS: ROZŁĄCZONO - Próba reconnectu...";
                 connectionStatus.classList.remove('connected');
                 buttons.forEach(id => document.getElementById(id).disabled = true);
             }
