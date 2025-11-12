@@ -46,7 +46,7 @@ Tłumaczenie ID na czytelne nazwy producenta i produktu.<br>
 Domyślnie ukrywa urządzenia o VID 1d6b:*. <-- USTAW POD SIEBIE.<br>
 PLIK mainwindow.cpp linia 257 if (dev.vid_pid != "N/A" && dev.vid_pid.rfind("1d6b:", 0) != 0) {<br>
 // Filtr: Pokaż tylko urządzenia z VID:PID, które nie są Root Hubami (1d6b:*)<br>
-Ogranicza widoczność do faktycznych urządzeń peryferyjnych, z możliwością wyłączenia filtra.<br>
+Ogranicza widoczność do faktycznych urządzeń, z możliwością wyłączenia filtra.<br>
 <br>
 **🧾 Wymagania Systemowe**<br>
 Sprawdzenie geteuid() == 0.<br>
