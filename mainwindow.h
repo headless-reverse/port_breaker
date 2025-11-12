@@ -40,11 +40,9 @@ private:
     QPushButton* m_resetIoctlButton;
     QPushButton* m_resetAllButton;
     QPushButton* m_toggleWakeupButton;
-    QLabel* m_statusLabel;
-    
+    QLabel* m_statusLabel;    
     QSpinBox* m_timerSpinBox;
     QCheckBox* m_showAllDevices;
-
     void updateDeviceTable();
     void updateDeviceTable(const std::vector<UsbDevice>& devices);
     bool isRoot();
