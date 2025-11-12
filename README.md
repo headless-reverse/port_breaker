@@ -17,7 +17,7 @@ Zapis echo 0 do authorized, następnie automatyczny echo 1 po czasie ...sek.<br>
 Używa QTimer (Qt) do ponownego włączenia po opóźnieniu (ms).<br>
 <br>
 **♻️ Reset (sysfs)**<br>
-Szybka sekwencja zapisu echo 0 → echo 1 do pliku authorized.<br>
+Sekwencja zapisu echo 0 → echo 1 do pliku authorized.<br>
 Symuluje fizyczne odłączenie/podłączenie urządzenia (miękki reset).<br>
 <br>
 **💥 Reset (ioctl)**<br>
@@ -26,7 +26,7 @@ Twardy reset na poziomie jądra — wymaga ścieżki urządzenia.<br>
 <br>
 **🌐 Globalny Reset Szyny**<br>
 Iteracja po wszystkich usbX/authorized, zapis 0 → 1.<br>
-Resetuje wszystkie porty i urządzenia na kontrolerach hosta.<br>
+Resetuje porty na kontrolerach hosta.<br>
 <br>
 **🌙 Zarządzanie Wake-up**<br>
 Zapis enabled lub disabled do /sys/.../power/wakeup.<br>
