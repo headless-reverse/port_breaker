@@ -108,3 +108,20 @@ const WS_URL = "ws://127.0.0.1:7678";<br>
 w zależności od conf
 
 <img width="1131" height="653" alt="obraz" src="https://github.com/user-attachments/assets/eb3f7ae5-29db-4816-8ab3-3b6b08902ea3" />
+
+# 🖥 portbreaker — wersja command_line_interface
+```bash
+gcc -o portbreaker portbreaker.c -lrt
+```
+```ini
+portbreaker  
+Użycie: portbreaker [opcja] [argumenty]
+  -e, --enable <SYSFS_PATH>             Włącz urządzenie. (Użyj ścieżki z kolumny [PATH]).
+  -d, --disable <SYSFS_PATH>            Wyłącz urządzenie.
+  -r, --reset-sysfs <SYSFS_PATH>        Resetuj (Wyłącz->Włącz) urządzenie Sysfs.
+  -t, --timed-disable <PATH> <SEC>      Wyłącz na SEC sekund, a następnie włącz.
+  -i, --reset-ioctl <DEV_PATH>          Resetuj przez ioctl (dla /dev/bus/usb/XXX/YYY).
+  -R, --reset-all                       Resetuj wszystkie kontrolery hosta (Sysfs).
+Lista:
+  -l, --list 'all'                      Lista urządzeń (pomija hosty, 'all' pokazuje wszystkie).
+```
