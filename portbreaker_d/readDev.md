@@ -1,4 +1,10 @@
-# Instrukcje Uruchomienia i Zarządzania Demonem portbreaker_d (WebSocket)
+# 🛰️ portbreaker_d — wersja daemon (WebSocket)
+
+**usługa systemowa (systemd service)  zdalne sterowanie portami USB poprzez WebSocket API**
+
+    cmake -B build
+    cmake --build build -j$(nproc)
+
 ## Wymagane Pliki:
 
 ### PLIK /etc/systemd/system/portbreaker.service
@@ -26,40 +32,23 @@ port=7678
 [PortBreaker]
 startFilterAll=false
 ```
-## Zarządzanie Usługą:
+## systemctl:
 
-**Przeładowanie Konfiguracji**
-```bash
-sudo systemctl daemon-reload
-```
-**włącz uruchamianie przy starcie**
-```bash
-systemctl enable portbreaker.service
-```
-**uruchom daemon**
-```bash
-systemctl start portbreaker.service
-```
-**status**
-```bash
-systemctl status portbreaker.service
-```
-**logi w czasie rzeczywistym**
-```bash
-journalctl -u portbreaker.service -f
-```
-**zatrzymanie daemon**
-```bash
-systemctl stop portbreaker.service
-```
-**wyłączenie uruchamiania przy starcie systemu**
-```bash
-systemctl disable portbreaker.service
-```
+**Przeładowanie Konfiguracji / LOGI**
+
+    systemctl daemon-reload
+    journalctl -u portbreaker.service -f
+**włącz/wyłącz uruchamianie przy starcie**
+
+    systemctl enable portbreaker.service
+    systemctl disable portbreaker.service
+**start/stop/status daemon**
+
+    systemctl start portbreaker.service
+    systemctl stop portbreaker.service
+    systemctl status portbreaker.service
 
 ## 🌐 Katalog html
 zmien index.html <br>
 const WS_URL = "ws://127.0.0.1:7678";<br>
 w zależności od conf
-
-<img width="1131" height="653" alt="obraz" src="https://github.com/user-attachments/assets/eb3f7ae5-29db-4816-8ab3-3b6b08902ea3" />
