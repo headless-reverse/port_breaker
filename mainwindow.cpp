@@ -18,25 +18,20 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent) {
     m_portBreaker = new PortBreaker(this);
-
     if (!isRoot()) {
         QMessageBox::critical(this, "headless", "run framework as root.");
         exit(1);
     }
-
     QWidget* centralWidget = new QWidget;
     QVBoxLayout* centralLayout = new QVBoxLayout(centralWidget);
-
     QHBoxLayout* timerLayout = new QHBoxLayout();
     m_timerSpinBox = new QSpinBox();
     m_timerSpinBox->setRange(1, 10000000);
     m_timerSpinBox->setValue(5);
     timerLayout->addWidget(new QLabel("Czas (sek):"));
     timerLayout->addWidget(m_timerSpinBox);
-
     m_showAllDevices = new QCheckBox("Show all fake_sys");
     m_showAllDevices->setChecked(false);
-
     m_refreshButton = new QPushButton("Refresh");
     m_enableButton = new QPushButton("Enable");
     m_disableButton = new QPushButton("Disable");
@@ -46,7 +41,6 @@ MainWindow::MainWindow(QWidget *parent)
     m_resetAllButton = new QPushButton("Reset all ports");
     m_toggleWakeupButton = new QPushButton("on/off Wake-up (ACPI)");
     m_statusLabel = new QLabel("ready (^_-)");
-
     centralLayout->addWidget(m_refreshButton);
     centralLayout->addWidget(m_showAllDevices);
     centralLayout->addWidget(m_enableButton);
@@ -58,16 +52,13 @@ MainWindow::MainWindow(QWidget *parent)
     centralLayout->addWidget(m_toggleWakeupButton);
     centralLayout->addWidget(m_resetAllButton);
     centralLayout->addWidget(m_statusLabel);
-
     setCentralWidget(centralWidget);
-
     m_deviceTable = new QTableWidget;
     m_deviceTable->setColumnCount(5);
     m_deviceTable->setHorizontalHeaderLabels({"VID:PID", "Nazwa Urzadzenia", "Status", "Sysfs", "Wake-up"});
     m_deviceTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_deviceTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_deviceTable->setSortingEnabled(true);
-
     QSettings settings("PortBreakerFramework", "USBManager");
     QByteArray headerState = settings.value("tableHeaderState").toByteArray();
     if (!headerState.isEmpty()) {
@@ -82,12 +73,10 @@ MainWindow::MainWindow(QWidget *parent)
         m_deviceTable->setColumnWidth(2, 90);
         m_deviceTable->setColumnWidth(4, 90);
     }
-
     QDockWidget* deviceDock = new QDockWidget("Lista Urzadzen", this);
     deviceDock->setAllowedAreas(Qt::AllDockWidgetAreas);
     deviceDock->setWidget(m_deviceTable);
     addDockWidget(Qt::LeftDockWidgetArea, deviceDock);
-
     connect(m_refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshButton);
     connect(m_enableButton, &QPushButton::clicked, this, &MainWindow::onEnableButton);
     connect(m_disableButton, &QPushButton::clicked, this, &MainWindow::onDisableButton);
@@ -97,27 +86,22 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_resetAllButton, &QPushButton::clicked, this, &MainWindow::onResetAllButton);
     connect(m_toggleWakeupButton, &QPushButton::clicked, this, &MainWindow::onToggleWakeupButton);
     connect(m_showAllDevices, &QCheckBox::toggled, this, &MainWindow::onShowAllDevicesToggled);
-
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
     m_timerSpinBox->setValue(settings.value("timerValue", 5).toInt());
     m_showAllDevices->setChecked(settings.value("showAll", false).toBool());
-
     updateDeviceTable();
 }
 
 MainWindow::~MainWindow() {
     QSettings settings("PortBreakerFramework", "USBManager");
-
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
     settings.setValue("timerValue", m_timerSpinBox->value());
     settings.setValue("showAll", m_showAllDevices->isChecked());
-
     if (m_deviceTable && m_deviceTable->horizontalHeader()) {
         settings.setValue("tableHeaderState", m_deviceTable->horizontalHeader()->saveState());
     }
-
     delete m_portBreaker;
 }
 
@@ -127,133 +111,135 @@ bool MainWindow::isRoot() {
 
 void MainWindow::onRefreshButton() {
     updateDeviceTable();
-    m_statusLabel->setText("Device list refreshed.");
+    m_statusLabel->setText("Device list refreshed");
 }
 
 void MainWindow::onEnableButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
-        m_statusLabel->setText("Select a device to enable.");
+        m_statusLabel->setText("Select a device to enable");
         return;
     }
-    QString sysfs_path = m_deviceTable->item(selectedItems.first()->row(), 3)->text(); 
-    
+    int row = selectedItems.first()->row();
+    QString sysfs_path = m_deviceTable->item(row, 3)->text();
+    QString vid_pid = m_deviceTable->item(row, 0)->text();    
     if (m_portBreaker->enableDeviceByPath(sysfs_path.toStdString())) {
-        m_statusLabel->setText(QString("Enabled (path): %1").arg(sysfs_path));
+        m_statusLabel->setText(QString("Enabled: %1").arg(vid_pid));
         updateDeviceTable();
     } else {
-        m_statusLabel->setText(QString("Error: Cannot enable %1.").arg(sysfs_path));
+        m_statusLabel->setText(QString("Error: enable %1").arg(vid_pid));
     }
 }
 
 void MainWindow::onDisableButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
-        m_statusLabel->setText("Select a device to disable.");
+        m_statusLabel->setText("Select a device to disable");
         return;
     }
-    QString sysfs_path = m_deviceTable->item(selectedItems.first()->row(), 3)->text(); 
-    
+    int row = selectedItems.first()->row();
+    QString sysfs_path = m_deviceTable->item(row, 3)->text();
+    QString vid_pid = m_deviceTable->item(row, 0)->text();    
     if (m_portBreaker->disableDeviceByPath(sysfs_path.toStdString())) {
-        m_statusLabel->setText(QString("Disabled (path): %1").arg(sysfs_path));
+        m_statusLabel->setText(QString("Disabled: %1").arg(vid_pid));
         updateDeviceTable();
     } else {
-        m_statusLabel->setText(QString("Error: Cannot disable %1.").arg(sysfs_path));
+        m_statusLabel->setText(QString("Error: disable %1").arg(vid_pid));
     }
 }
 
 void MainWindow::onResetSysfsButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
-        m_statusLabel->setText("Select a device to reset.");
+        m_statusLabel->setText("Select a device to reset");
         return;
     }
-    QString sysfs_path = m_deviceTable->item(selectedItems.first()->row(), 3)->text(); 
-
+    int row = selectedItems.first()->row();
+    QString sysfs_path = m_deviceTable->item(row, 3)->text();
+    QString vid_pid = m_deviceTable->item(row, 0)->text();
     if (m_portBreaker->resetDeviceSysfsByPath(sysfs_path.toStdString())) {
-        m_statusLabel->setText(QString("Device reset via sysfs: %1").arg(sysfs_path));
+        m_statusLabel->setText(QString("Reset (Sysfs): %1").arg(vid_pid));
         updateDeviceTable();
     } else {
-        m_statusLabel->setText(QString("Error: Cannot reset device via sysfs: %1.").arg(sysfs_path));
+        m_statusLabel->setText(QString("Error: reset (Sysfs): %1").arg(vid_pid));
     }
 }
 
 void MainWindow::onResetIoctlButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
-        m_statusLabel->setText("Select a device to reset.");
+        m_statusLabel->setText("Select a device to reset");
         return;
     }
-    QString vid_pid = m_deviceTable->item(selectedItems.first()->row(), 0)->text();
+    int row = selectedItems.first()->row();
+    QString vid_pid = m_deviceTable->item(row, 0)->text();    
     if (vid_pid == "N/A") {
-        m_statusLabel->setText("Error: ioctl reset requires VID:PID. Select another device.");
+        m_statusLabel->setText("Error: ioctl reset requires VID:PID");
         return;
     }
     if (m_portBreaker->resetDeviceIoctl(vid_pid.toStdString())) {
         m_statusLabel->setText(QString("Reset (ioctl): %1").arg(vid_pid));
         updateDeviceTable();
     } else {
-        m_statusLabel->setText(QString("Error: Cannot reset (ioctl): %1.").arg(vid_pid));
+        m_statusLabel->setText(QString("Error: reset (ioctl): %1").arg(vid_pid));
     }
 }
 
 void MainWindow::onResetAllButton() {
     if (m_portBreaker->resetAllDevicesSysfs()) {
-        m_statusLabel->setText("All USB host controllers have been reset.");
+        m_statusLabel->setText("All host controllers reset");
         updateDeviceTable();
     } else {
-        m_statusLabel->setText("Error: Cannot reset all controllers.");
+        m_statusLabel->setText("Error: reset all controllers");
     }
 }
 
 void MainWindow::onToggleWakeupButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
-        m_statusLabel->setText("Select a device to toggle wake-up.");
+        m_statusLabel->setText("Select a device to wake-up");
         return;
     }
-    QString sysfs_path = m_deviceTable->item(selectedItems.first()->row(), 3)->text(); 
-
+    int row = selectedItems.first()->row();
+    QString sysfs_path = m_deviceTable->item(row, 3)->text();
+    QString vid_pid = m_deviceTable->item(row, 0)->text();    
     if (m_portBreaker->toggleWakeupByPath(sysfs_path.toStdString())) {
-        m_statusLabel->setText(QString("Wake-up toggled: %1").arg(sysfs_path));
+        m_statusLabel->setText(QString("Wake-up for: %1").arg(vid_pid));
         updateDeviceTable();
     } else {
-        m_statusLabel->setText(QString("Error: Cannot toggle wake-up for %1.").arg(sysfs_path));
+        m_statusLabel->setText(QString("Error: wake-up for %1").arg(vid_pid));
     }
 }
 
 void MainWindow::onDisableWithTimerButton() {
     QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (selectedItems.isEmpty()) {
-        m_statusLabel->setText("Select a device to disable.");
+        m_statusLabel->setText("Select a device to disable");
         return;
-    }
-    
-    QString sysfs_path = m_deviceTable->item(selectedItems.first()->row(), 3)->text(); 
-    std::string path_str = sysfs_path.toStdString();
-    
+    }   
+    int row = selectedItems.first()->row();
+    QString sysfs_path = m_deviceTable->item(row, 3)->text(); 
+    QString vid_pid = m_deviceTable->item(row, 0)->text();
+    std::string path_str = sysfs_path.toStdString();    
     const int delay_sec = m_timerSpinBox->value();
     const int delay_ms = delay_sec * 1000;
-
     if (m_portBreaker->disableDeviceByPath(path_str)) {
-        m_statusLabel->setText(QString("Disabled: %1. Auto re-enable in %2 seconds.").arg(sysfs_path).arg(delay_sec));
+        m_statusLabel->setText(QString("Disabled: %1 re-enable in %2s").arg(vid_pid).arg(delay_sec));
         updateDeviceTable();
-
         QTimer* timer = new QTimer(this);
-        timer->setSingleShot(true);
-        connect(timer, &QTimer::timeout, [this, path_str, sysfs_path, timer]() {
+        timer->setSingleShot(true);        
+        connect(timer, &QTimer::timeout, [this, path_str, vid_pid, timer]() {
             if (m_portBreaker->enableDeviceByPath(path_str)) {
-                m_statusLabel->setText(QString("Device re-enabled after timer: %1").arg(sysfs_path));
+                m_statusLabel->setText(QString("Device re-enabled: %1").arg(vid_pid));
             } else {
-                m_statusLabel->setText(QString("Error: Cannot re-enable after timer: %1.").arg(sysfs_path));
+                m_statusLabel->setText(QString("Error: re-enable: %1").arg(vid_pid));
             }
             updateDeviceTable();
             timer->deleteLater();
         });
-        timer->start(delay_ms);
-        
+        timer->start(delay_ms);        
     } else {
-        m_statusLabel->setText(QString("Error: Cannot disable %1.").arg(sysfs_path));
+        m_statusLabel->setText(QString("Error: disable %1").arg(vid_pid));
     }
 }
 
@@ -263,8 +249,7 @@ void MainWindow::onShowAllDevicesToggled(bool checked) {
 }
 
 void MainWindow::updateDeviceTable() {
-    std::vector<UsbDevice> all_devices = m_portBreaker->getDevices();
-    
+    std::vector<UsbDevice> all_devices = m_portBreaker->getDevices();    
     if (!m_showAllDevices->isChecked()) {
         std::vector<UsbDevice> filtered_devices;
         for (const auto& dev : all_devices) {
@@ -283,22 +268,18 @@ void MainWindow::updateDeviceTable(const std::vector<UsbDevice>& devices) {
     m_deviceTable->setRowCount(0);
     m_deviceTable->setRowCount(devices.size());
     for (size_t i = 0; i < devices.size(); ++i) {
-        const UsbDevice& dev = devices.at(i);
-        
+        const UsbDevice& dev = devices.at(i);        
         m_deviceTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(dev.vid_pid)));
         m_deviceTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(dev.name)));
-        m_deviceTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(dev.path)));
-        
+        m_deviceTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(dev.path)));        
         QString status_path = QString::fromStdString(dev.authorized_path);
         QFile file(status_path);
-        QString status = "N/A";
-        
+        QString status = "N/A";        
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QTextStream in(&file);
             status = in.readAll().trimmed() == "1" ? "Aktywny" : "Wylaczony";
             file.close();
-        }
-        
+        }        
         QTableWidgetItem* statusItem = new QTableWidgetItem(status);
         if (status == "Aktywny") {
             statusItem->setBackground(QBrush(QColor(0, 100, 0)));
@@ -311,7 +292,6 @@ void MainWindow::updateDeviceTable(const std::vector<UsbDevice>& devices) {
             statusItem->setForeground(QBrush(Qt::white));
         }
         m_deviceTable->setItem(i, 2, statusItem);
-
         QString wakeup_status = "N/A";
         if (dev.wakeup_path != "N/A") {
             QFile wakeup_file(QString::fromStdString(dev.wakeup_path));
@@ -320,8 +300,7 @@ void MainWindow::updateDeviceTable(const std::vector<UsbDevice>& devices) {
                 wakeup_status = in.readAll().trimmed();
                 wakeup_file.close();
             }
-        }
-        
+        }        
         QTableWidgetItem* wakeupItem = new QTableWidgetItem(wakeup_status);
         if (wakeup_status == "enabled") {
             wakeupItem->setBackground(QBrush(QColor(30, 80, 150))); 
