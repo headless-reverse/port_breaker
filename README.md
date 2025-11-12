@@ -44,6 +44,6 @@ Ogranicza widoczność do faktycznych urządzeń peryferyjnych, z możliwością
 Sprawdzenie geteuid() == 0.<br>
 Aplikacja wymaga roota do operacji zapisu sysfs / ioctl.<br>
 
-# 🛰️ portbreaker_d — wersja daemon (WebSocket Server)
+# 🛰️ portbreaker_d — wersja daemon (WebSocket)
 
 usługa systemowa (systemd service), zapewniająca zdalne sterowanie portami USB poprzez WebSocket API.
