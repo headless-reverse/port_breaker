@@ -8,49 +8,49 @@ zarządzanie portami usb / sysfs, ioctl - app deskopowa w C/C ++Qt6  (Linux)
 
 ## 🧠 Opis Techniczny
 
-**🔌 (Enable/Disable)**<br>
-Zapis sekwencji echo 1 lub echo 0 do pliku /sys/bus/usb/devices/*/authorized.<br>
-Logiczne odłączanie (0) lub podłączanie (1) urządzenia.<br>
-<br>
-**⏱️ Disable (timer)**<br>
-Zapis echo 0 do authorized, następnie automatyczny echo 1 po czasie ...sek.<br>
-Używa QTimer (Qt) do ponownego włączenia po opóźnieniu (ms).<br>
-<br>
-**♻️ Reset (sysfs)**<br>
-Sekwencja zapisu echo 0 → echo 1 do pliku authorized.<br>
-Symuluje fizyczne odłączenie/podłączenie urządzenia (miękki reset).<br>
-<br>
-**💥 Reset (ioctl)**<br>
-Wywołanie ioctl(USBDEVFS_RESET) na /dev/bus/usb/....<br>
-Twardy reset na poziomie jądra — wymaga ścieżki urządzenia.<br>
-<br>
-**🌐 Globalny Reset Szyny**<br>
-Iteracja po wszystkich usbX/authorized, zapis 0 → 1.<br>
-Resetuje porty na kontrolerach hosta.<br>
-<br>
-**🌙 Zarządzanie Wake-up**<br>
-Zapis enabled lub disabled do /sys/.../power/wakeup.<br>
-Kontroluje, czy urządzenie może wybudzić system (ACPI).<br>
+**🔌 (Enable/Disable)**  
+Zapis sekwencji echo 1 lub echo 0 do pliku /sys/bus/usb/devices/*/authorized.  
+Logiczne odłączanie (0) lub podłączanie (1) urządzenia.  
+  
+**⏱️ Disable (timer)**  
+Zapis echo 0 do authorized, następnie automatyczny echo 1 po czasie ...sek.  
+Używa QTimer (Qt) do ponownego włączenia po opóźnieniu (ms).  
+  
+**♻️ Reset (sysfs)**  
+Sekwencja zapisu echo 0 → echo 1 do pliku authorized.  
+Symuluje fizyczne odłączenie/podłączenie urządzenia (miękki reset).  
+  
+**💥 Reset (ioctl)**  
+Wywołanie ioctl(USBDEVFS_RESET) na /dev/bus/usb/....  
+Twardy reset na poziomie jądra — wymaga ścieżki urządzenia.  
+  
+**🌐 Globalny Reset Szyny**  
+Iteracja po wszystkich usbX/authorized, zapis 0 → 1.  
+Resetuje porty na kontrolerach hosta.  
+  
+**🌙 Zarządzanie Wake-up**  
+Zapis enabled lub disabled do /sys/.../power/wakeup.  
+Kontroluje, czy urządzenie może wybudzić system (ACPI).  
 
 ## 🧩 Logika Aplikacji
 
-**🔍 Wykrywanie Urządzeń**<br>
-Skanowanie i parsowanie drzewa katalogów w /sys/bus/usb/devices/.<br>
-Identyfikacja urządzeń i pobieranie ich ścieżek (authorized_path, wakeup_path).<br>
-<br>
-**🗂️ Mapowanie Nazw**<br>
-Wyszukiwanie par VID:PID w plikach konfiguracyjnych usb.ids.<br>
-Tłumaczenie ID na czytelne nazwy producenta i produktu.<br>
-<br>
-**🚫 Filtrowanie Root Hubów**<br>
-Domyślnie ukrywa urządzenia o VID 1d6b:*. <-- USTAW POD SIEBIE.<br>
-PLIK mainwindow.cpp linia 257 if (dev.vid_pid != "N/A" && dev.vid_pid.rfind("1d6b:", 0) != 0) {<br>
-// Filtr: Pokaż tylko urządzenia z VID:PID, które nie są Root Hubami (1d6b:*)<br>
-Ogranicza widoczność do faktycznych urządzeń, z możliwością wyłączenia filtra.<br>
-<br>
-**🧾 Wymagania Systemowe**<br>
-Sprawdzenie geteuid() == 0.<br>
-Aplikacja wymaga root do operacji zapisu sysfs / ioctl.<br>
+**🔍 Wykrywanie Urządzeń**  
+Skanowanie i parsowanie drzewa katalogów w /sys/bus/usb/devices/.  
+Identyfikacja urządzeń i pobieranie ich ścieżek (authorized_path, wakeup_path).  
+  
+**🗂️ Mapowanie Nazw**  
+Wyszukiwanie par VID:PID w plikach konfiguracyjnych usb.ids.  
+Tłumaczenie ID na czytelne nazwy producenta i produktu.  
+  
+**🚫 Filtrowanie Root Hubów**  
+Domyślnie ukrywa urządzenia o VID 1d6b:*. <-- USTAW POD SIEBIE.  
+PLIK mainwindow.cpp linia 257 if (dev.vid_pid != "N/A" && dev.vid_pid.rfind("1d6b:", 0) != 0) {  
+// Filtr: Pokaż tylko urządzenia z VID:PID, które nie są Root Hubami (1d6b:*)  
+Ogranicza widoczność do faktycznych urządzeń, z możliwością wyłączenia filtra.  
+  
+**🧾 Wymagania Systemowe**  
+Sprawdzenie geteuid() == 0.  
+Aplikacja wymaga root do operacji zapisu sysfs / ioctl.  
 
 # 🛰️ portbreaker_d — wersja daemon (WebSocket)
 
@@ -103,8 +103,8 @@ startFilterAll=false
     systemctl status portbreaker.service
 
 ## 🌐 html.tar.xz
-zmien index.html <br>
-const WS_URL = "ws://127.0.0.1:7678";<br>
+zmien index.html  
+const WS_URL = "ws://127.0.0.1:7678";  
 w zależności od conf
 
 <img width="1131" height="653" alt="obraz" src="https://github.com/user-attachments/assets/eb3f7ae5-29db-4816-8ab3-3b6b08902ea3" />
