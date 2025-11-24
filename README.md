@@ -4,8 +4,8 @@ zarządzanie portami usb / sysfs, ioctl - app deskopowa w C/C ++Qt6  (Linux)
     
     cmake -B build
     cmake --build build -j$(nproc)
-
-  <img width="1081" height="399" alt="portbreaker" src="https://github.com/user-attachments/assets/202b44da-e1e6-499d-8149-569f1a43d560" />
+    
+  <img width="1042" height="614" alt="2025-11-24_04-54-28" src="https://github.com/user-attachments/assets/c1b3bd51-42f7-4cce-9791-9ff440c88eed" />
 
 ## 🧠 Opis Techniczny
 
