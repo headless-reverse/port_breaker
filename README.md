@@ -45,7 +45,7 @@ Tłumaczenie ID na czytelne nazwy producenta i produktu.
   
 **🚫 Filtrowanie Root Hubów**  
 Domyślnie ukrywa urządzenia o VID 1d6b:*. <-- USTAW POD SIEBIE.  
-PLIK mainwindow.cpp linia 257 if (dev.vid_pid != "N/A" && dev.vid_pid.rfind("1d6b:", 0) != 0) {  
+PLIK mainwindow.cpp linia 261 if (dev.vid_pid != "N/A" && dev.vid_pid.rfind("1d6b:", 0) != 0) {  
 // Filtr: Pokaż tylko urządzenia z VID:PID, które nie są Root Hubami (1d6b:*)  
 Ogranicza widoczność do faktycznych urządzeń, z możliwością wyłączenia filtra.  
   
