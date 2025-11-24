@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include <QMenuBar>
+#include <QMenu>
 #include <QSettings>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -24,8 +26,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     if (!isRoot()) {
         QMessageBox::critical(this, "Root Error", "Application must be run as root.");
         exit(1);}
-    QWidget* centralWidget = new QWidget;
-    QVBoxLayout* centralLayout = new QVBoxLayout(centralWidget);
+    QWidget* controlWidgetContent = new QWidget;
+    QVBoxLayout* controlLayout = new QVBoxLayout(controlWidgetContent);
     QHBoxLayout* timerLayout = new QHBoxLayout();    
     m_timerSpinBox = new QSpinBox();
     m_timerSpinBox->setRange(1, 86400);
@@ -43,18 +45,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     m_resetAllButton = new QPushButton("Reset all ports");
     m_toggleWakeupButton = new QPushButton("on/off  wake-up (ACPI)");    
     m_watchdogCheckBox = new QCheckBox("Monitor (watchdog)");    
-    centralLayout->addWidget(m_refreshButton);
-    centralLayout->addWidget(m_showAllDevices);
-    centralLayout->addWidget(m_enableButton);
-    centralLayout->addWidget(m_disableButton);
-    centralLayout->addLayout(timerLayout);
-    centralLayout->addWidget(m_disableWithTimerButton);
-    centralLayout->addWidget(m_resetSysfsButton);
-    centralLayout->addWidget(m_resetIoctlButton);
-    centralLayout->addWidget(m_toggleWakeupButton);
-    centralLayout->addWidget(m_watchdogCheckBox); 
-    centralLayout->addWidget(m_resetAllButton);    
-    setCentralWidget(centralWidget);    
+    controlLayout->addWidget(m_refreshButton);
+    controlLayout->addWidget(m_showAllDevices);
+    controlLayout->addWidget(m_enableButton);
+    controlLayout->addWidget(m_disableButton);
+    controlLayout->addLayout(timerLayout);
+    controlLayout->addWidget(m_disableWithTimerButton);
+    controlLayout->addWidget(m_resetSysfsButton);
+    controlLayout->addWidget(m_resetIoctlButton);
+    controlLayout->addWidget(m_toggleWakeupButton);
+    controlLayout->addWidget(m_watchdogCheckBox);
+    controlLayout->addWidget(m_resetAllButton);    
+    m_controlDock = new QDockWidget(tr("Control"), this);
+    m_controlDock->setObjectName("ControlDock");
+    m_controlDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    m_controlDock->setWidget(controlWidgetContent);
+    addDockWidget(Qt::LeftDockWidgetArea, m_controlDock);
     m_deviceTable = new QTableWidget;
     m_deviceTable->setColumnCount(5);
     m_deviceTable->setHorizontalHeaderLabels({"VID:PID", "Nazwa Urzadzenia", "Status", "Sysfs", "Wake-up"});
@@ -74,17 +80,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         m_deviceTable->setColumnWidth(0, 90);
         m_deviceTable->setColumnWidth(2, 90);
         m_deviceTable->setColumnWidth(4, 90);}
-    QDockWidget* deviceDock = new QDockWidget("Lista Urzadzen", this);
-    deviceDock->setAllowedAreas(Qt::AllDockWidgetAreas);
-    deviceDock->setWidget(m_deviceTable);
-    addDockWidget(Qt::LeftDockWidgetArea, deviceDock);
+    setCentralWidget(m_deviceTable);
     m_logDock = new QDockWidget("System Logs", this);
+    m_logDock->setObjectName("LogDock");
     m_logDock->setAllowedAreas(Qt::AllDockWidgetAreas);
     m_logConsole = new QTextEdit();
     m_logConsole->setReadOnly(true);
     m_logConsole->setStyleSheet("background-color: #222; color: #0f0; font-family: Monospace;");
     m_logDock->setWidget(m_logConsole);
     addDockWidget(Qt::BottomDockWidgetArea, m_logDock);
+    createMenus();
     connect(m_refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshButton);
     connect(m_enableButton, &QPushButton::clicked, this, &MainWindow::onEnableButton);
     connect(m_disableButton, &QPushButton::clicked, this, &MainWindow::onDisableButton);
@@ -119,15 +124,16 @@ void MainWindow::appendLog(QString msg, int level) {
     if (level == 1) color = "#ff5555";
     if (level == 2) color = "#55ffff";
     QString timestamp = QDateTime::currentDateTime().toString("HH:mm:ss");
+
     QString html = QString("<span style='color: #888;'>[%1]</span> <span style='color: %2;'>%3</span>")
-            .arg(timestamp, color, msg);    
+        .arg(timestamp, color, msg);    
     m_logConsole->append(html);
     QScrollBar *sb = m_logConsole->verticalScrollBar();
     sb->setValue(sb->maximum());}
 
 void MainWindow::onWatchdogToggled(bool checked) {
+    QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
     if (checked) {
-        QList<QTableWidgetItem*> selectedItems = m_deviceTable->selectedItems();
         if (selectedItems.isEmpty()) {
             m_watchdogCheckBox->setChecked(false);
             appendLog("Select a device first to monitor!", 1);
@@ -251,6 +257,7 @@ void MainWindow::updateDeviceTable() {
     if (!m_showAllDevices->isChecked()) {
         std::vector<UsbDevice> filtered_devices;
         for (const auto& dev : all_devices) {
+			// Filtr: Pokaż tylko urządzenia z VID:PID, które nie są Root Hubami (1d6b:*)
             if (dev.vid_pid != "N/A" && dev.vid_pid.rfind("1d6b:", 0) != 0) {
                 filtered_devices.push_back(dev);}}
         updateDeviceTable(filtered_devices);
@@ -301,3 +308,67 @@ void MainWindow::updateDeviceTable(const std::vector<UsbDevice>& devices) {
             wakeupItem->setBackground(QBrush(QColor(50, 50, 50)));
             wakeupItem->setForeground(QBrush(Qt::white));}
         m_deviceTable->setItem(i, 4, wakeupItem);}}
+
+void MainWindow::createMenus() {
+    QMenuBar* menuBar = new QMenuBar(this);
+    setMenuBar(menuBar);
+    // --- MENU: File (Plik) ---
+    QMenu* fileMenu = menuBar->addMenu(tr("&File"));
+    // Akcja Odśwież (Refresh) - Skrót F5
+    QAction* refreshAction = fileMenu->addAction(tr("&Refresh Devices"));
+    refreshAction->setShortcut(QKeySequence(Qt::Key_F5));
+    connect(refreshAction, &QAction::triggered, this, &MainWindow::onRefreshButton);
+    fileMenu->addSeparator();
+    // Akcja Wyjdź (Exit) - Skrót Ctrl|Q
+    QAction* exitAction = fileMenu->addAction(tr("E&xit"));
+    exitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    connect(exitAction, &QAction::triggered, this, &QWidget::close);
+    // --- MENU: Process (Procesy/Kontrola) ---
+    QMenu* processMenu = menuBar->addMenu(tr("&Process"));
+    // Enable Selected - Skrót Ctrl|E
+    QAction* enableAction = processMenu->addAction(tr("&Enable Selected Device"));
+    enableAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E));
+    connect(enableAction, &QAction::triggered, this, &MainWindow::onEnableButton);
+    // Disable Selected - Skrót Ctrl|D
+    QAction* disableAction = processMenu->addAction(tr("&Disable Selected Device"));
+    disableAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+    connect(disableAction, &QAction::triggered, this, &MainWindow::onDisableButton);
+    // Disable with Timer - Skrót Ctrl|T
+    QAction* disableTimerAction = processMenu->addAction(tr("Disable with &Timer"));
+    disableTimerAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
+    connect(disableTimerAction, &QAction::triggered, this, &MainWindow::onDisableWithTimerButton);
+    processMenu->addSeparator();
+    // Reset Sysfs - Skrót Ctrl|S
+    QAction* resetSysfsAction = processMenu->addAction(tr("Reset Selected (&Sysfs)"));
+    resetSysfsAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
+    connect(resetSysfsAction, &QAction::triggered, this, &MainWindow::onResetSysfsButton);
+    // Reset Ioctl - Skrót Ctrl|I
+    QAction* resetIoctlAction = processMenu->addAction(tr("Reset Selected (&Ioctl)"));
+    resetIoctlAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_I));
+    connect(resetIoctlAction, &QAction::triggered, this, &MainWindow::onResetIoctlButton);
+    processMenu->addSeparator();
+    // Toggle Wakeup - Skrót Ctrl|W
+    QAction* toggleWakeupAction = processMenu->addAction(tr("Toggle &Wakeup for Selected (ACPI)"));
+    toggleWakeupAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_W));
+    connect(toggleWakeupAction, &QAction::triggered, this, &MainWindow::onToggleWakeupButton);
+    processMenu->addSeparator();
+    // Reset All - Skrót Ctrl|A
+    QAction* resetAllAction = processMenu->addAction(tr("Reset &All USB Ports (Sysfs)"));
+    resetAllAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_A));
+    connect(resetAllAction, &QAction::triggered, this, &MainWindow::onResetAllButton);
+    // --- MENU: View (Widok) ---
+    QMenu* viewMenu = menuBar->addMenu(tr("&View"));
+    // Akcja dla Docka Kontrolek
+    if (m_controlDock) {
+        QAction* controlAction = m_controlDock->toggleViewAction();
+        controlAction->setText(tr("&Kontrolki Urządzeń"));
+        viewMenu->addAction(controlAction);}
+    // Akcja dla Docka Logów
+    if (m_logDock) {
+        QAction* logAction = m_logDock->toggleViewAction();
+        logAction->setText(tr("Log &Console"));
+        viewMenu->addAction(logAction);}
+    // --- MENU: Help (Pomoc) ---
+    QMenu* helpMenu = menuBar->addMenu(tr("&Help"));
+    helpMenu->addAction(tr("&About PortBreaker"), []() {
+        QMessageBox::about(nullptr, "About PortBreaker", "PortBreaker - USB Control System\nVersion 2.0\nDesktop Client (Qt).");});}
