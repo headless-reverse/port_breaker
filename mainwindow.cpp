@@ -361,7 +361,7 @@ void MainWindow::createMenus() {
     // Akcja dla Docka Kontrolek
     if (m_controlDock) {
         QAction* controlAction = m_controlDock->toggleViewAction();
-        controlAction->setText(tr("&Kontrolki Urządzeń"));
+        controlAction->setText(tr("&Control"));
         viewMenu->addAction(controlAction);}
     // Akcja dla Docka Logów
     if (m_logDock) {
