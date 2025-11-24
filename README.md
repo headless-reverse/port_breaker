@@ -33,7 +33,15 @@ Resetuje porty na kontrolerach hosta.
 Zapis enabled lub disabled do /sys/.../power/wakeup.  
 Kontroluje, czy urządzenie może wybudzić system (ACPI).  
 
+**🧐 Watchdog**
+W BUDOWIE. Monitorujący wybranego urządzenia. 
+W przypadku nieoczekiwanego zniknięcia (rozłączenia), wyzwala alert w GUI.
+
 ## 🧩 Logika Aplikacji
+
+**📈Interfejs**
+QTableWidget dynamicznie wyświetlająca stan urządzeń (Aktywny/Wyłączony)  
+oraz czas odliczania w przypadku użycia timera.  
 
 **🔍 Wykrywanie Urządzeń**  
 Skanowanie i parsowanie drzewa katalogów w /sys/bus/usb/devices/.  
@@ -52,6 +60,22 @@ Ogranicza widoczność do faktycznych urządzeń, z możliwością wyłączenia 
 **🧾 Wymagania Systemowe**  
 Sprawdzenie geteuid() == 0.  
 Aplikacja wymaga root do operacji zapisu sysfs / ioctl.  
+
+**</> Log Console**
+Dock widget wyświetlający logi systemowe i komunikaty z aplikacji
+
+**⌨️ Skróty Klawiszowe**
+```
+Refresh Devices	F5
+Enable Selected Device	Ctrl + E
+Disable Selected Device	Ctrl + D
+Disable with Timer	Ctrl + T
+Reset Selected (Sysfs)	Ctrl + S
+Reset Selected (Ioctl)	Ctrl + I
+Toggle Wakeup (ACPI)	Ctrl + W
+Reset All USB Ports	Ctrl + A
+Exit	Ctrl + Q
+```
 
 # 🛰️ portbreaker_d — wersja daemon (WebSocket)
 
