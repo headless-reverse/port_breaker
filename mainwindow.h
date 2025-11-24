@@ -47,10 +47,12 @@ private:
     QCheckBox* m_showAllDevices;    
     QCheckBox* m_watchdogCheckBox;
     QDockWidget* m_logDock;
+    QDockWidget* m_controlDock;
     QTextEdit* m_logConsole;
     void updateDeviceTable();
     void updateDeviceTable(const std::vector<UsbDevice>& devices);
     bool isRoot();
+    void createMenus();
 };
 
 #endif
