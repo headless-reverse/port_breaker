@@ -132,7 +132,7 @@ zmien index.html
 const WS_URL = "ws://127.0.0.1:7678";  
 w zależności od conf
 
-<img width="1131" height="653" alt="obraz" src="https://github.com/user-attachments/assets/eb3f7ae5-29db-4816-8ab3-3b6b08902ea3" />
+<img width="1050" height="720" alt="2025-11-24_11-33-14" src="https://github.com/user-attachments/assets/1f5fefe5-cbe5-4bba-8b2f-ee74928f244c" />
 
 # 🖥 portbreaker — wersja command_line_interface
 ```bash
