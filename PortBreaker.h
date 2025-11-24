@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QThread>
+#include <QTimer>
 
 const std::string SYSFS_USB_DEVICES = "/sys/bus/usb/devices/";
 const std::string DEV_USB_BUS = "/dev/bus/usb/";
@@ -28,7 +29,7 @@ class PortBreaker : public QObject {
     Q_OBJECT
 
 public:
-    explicit PortBreaker(QObject *parent = nullptr);
+    explicit PortBreaker(QObject *parent = nullptr);    
     std::vector<UsbDevice> getDevices();    
     bool enableDeviceByPath(const std::string& sysfs_path);
     bool disableDeviceByPath(const std::string& sysfs_path);
@@ -39,14 +40,26 @@ public:
     bool resetDeviceIoctl(const std::string& vid_pid);
     bool resetAllDevicesSysfs();
     bool toggleWakeupByPath(const std::string& sysfs_path);
-    
+    void startWatchdog(const std::string& vid_pid, int checkIntervalMs);
+    void stopWatchdog();
+
+signals:
+    void logMessage(QString msg, int level);
+    void watchdogTriggered(QString vid_pid);
+
+private slots:
+    void onWatchdogTimeout();
+
 private:
-    std::map<std::string, std::string> m_usbNames;
+    std::map<std::string, std::string> m_usbNames;    
+    QTimer* m_watchdogTimer;
+    std::string m_watchedVidPid;
     std::string readSysfsFile(const std::string& file_path);
     bool writeSysfsFile(const std::string& file_path, const std::string& value);
     std::map<std::string, std::string> loadUsbNames();
     bool ioctlResetDevice(const std::string& dev_path);
     std::string findDevPathByVidPid(const std::string& vid_pid);
+    bool deviceExists(const std::string& vid_pid);
 };
 
-#endif // PORTBREAKER_H
+#endif
