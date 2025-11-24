@@ -9,6 +9,8 @@
 #include <QSpinBox>
 #include <QCheckBox>
 #include <QTextEdit>
+#include <QMenuBar>
+#include <QMenu>
 #include "PortBreaker.h"
 
 class MainWindow : public QMainWindow {
@@ -47,12 +49,12 @@ private:
     QCheckBox* m_showAllDevices;    
     QCheckBox* m_watchdogCheckBox;
     QDockWidget* m_logDock;
+    QTextEdit* m_logConsole; 
     QDockWidget* m_controlDock;
-    QTextEdit* m_logConsole;
+    bool isRoot();
     void updateDeviceTable();
     void updateDeviceTable(const std::vector<UsbDevice>& devices);
-    bool isRoot();
     void createMenus();
 };
 
-#endif
+#endif // MAINWINDOW_H
