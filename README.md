@@ -34,7 +34,7 @@ Zapis enabled lub disabled do /sys/.../power/wakeup.
 Kontroluje, czy urządzenie może wybudzić system (ACPI).  
 
 **🧐 Watchdog**
-W BUDOWIE. Monitorujący wybranego urządzenia.  
+Monitoring wybranego urządzenia.  
 W przypadku nieoczekiwanego zniknięcia (rozłączenia), wyzwala alert w GUI.
 
 ## 🧩 Logika Aplikacji
