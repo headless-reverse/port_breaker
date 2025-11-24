@@ -4,11 +4,11 @@
 #include <QMainWindow>
 #include <QTableWidget>
 #include <QPushButton>
-#include <QLabel>
 #include <QDockWidget>
 #include <QTimer>
 #include <QSpinBox>
 #include <QCheckBox>
+#include <QTextEdit>
 #include "PortBreaker.h"
 
 class MainWindow : public QMainWindow {
@@ -28,10 +28,13 @@ private slots:
     void onResetAllButton();
     void onShowAllDevicesToggled(bool checked);
     void onToggleWakeupButton();
+    void onWatchdogToggled(bool checked);
+    void appendLog(QString msg, int level);
+    void onWatchdogTriggered(QString vid_pid);
 
 private:
     PortBreaker* m_portBreaker;
-    QTableWidget* m_deviceTable;
+    QTableWidget* m_deviceTable;    
     QPushButton* m_refreshButton;
     QPushButton* m_enableButton;
     QPushButton* m_disableButton;
@@ -39,13 +42,15 @@ private:
     QPushButton* m_resetSysfsButton;
     QPushButton* m_resetIoctlButton;
     QPushButton* m_resetAllButton;
-    QPushButton* m_toggleWakeupButton;
-    QLabel* m_statusLabel;    
+    QPushButton* m_toggleWakeupButton;    
     QSpinBox* m_timerSpinBox;
-    QCheckBox* m_showAllDevices;
+    QCheckBox* m_showAllDevices;    
+    QCheckBox* m_watchdogCheckBox;
+    QDockWidget* m_logDock;
+    QTextEdit* m_logConsole;
     void updateDeviceTable();
     void updateDeviceTable(const std::vector<UsbDevice>& devices);
     bool isRoot();
 };
 
-#endif // MAINWINDOW_H
+#endif
